@@ -60,6 +60,8 @@ This results in a **training-free**, **memory-efficient**, and **scalable** syst
 ---
 
 ## Folder Structure
+
+```
 Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH/
 │
 ├── Code/
@@ -72,25 +74,26 @@ Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH/
 │   └── Research_Paper_Patchcore.pdf    # Full paper
 │
 └── Results/
-├── Graphs/
-│   ├── AUROC + Inference Speed per category.png
-│   ├── Accuracy Speed trade off.png
-│   ├── Confusion Matrix.png
-│   ├── Distributiuon of AUROC across categories.png
-│   ├── High & Low Performing Categories.png
-│   ├── MVTEC AD1 Dataset Statistics.png
-│   ├── Method comparison.png
-│   ├── Multi metric performance.png
-│   ├── Patchcore-LSH performance on MVTEC AD 1.png
-│   ├── Performance Heatmap.png
-│   ├── Performance Radar Chart.png
-│   └── ROC Curves.png
-│
-└── Tables/
-├── Dataset Overview.png
-├── Final Results on MVTEC AD1.png
-├── Individual Category Performance.png
-└── Statistics.png
+    ├── Graphs/
+    │   ├── AUROC + Inference Speed per category.png
+    │   ├── Accuracy Speed trade off.png
+    │   ├── Confusion Matrix.png
+    │   ├── Distribution of AUROC across categories.png
+    │   ├── High & Low Performing Categories.png
+    │   ├── MVTEC AD1 Dataset Statistics.png
+    │   ├── Method comparison.png
+    │   ├── Multi metric performance.png
+    │   ├── Patchcore-LSH performance on MVTEC AD 1.png
+    │   ├── Performance Heatmap.png
+    │   ├── Performance Radar Chart.png
+    │   └── ROC Curves.png
+    │
+    └── Tables/
+        ├── Dataset Overview.png
+        ├── Final Results on MVTEC AD1.png
+        ├── Individual Category Performance.png
+        └── Statistics.png
+```
 
 ---
 
@@ -101,6 +104,8 @@ We use the **MVTec Anomaly Detection Dataset (MVTec AD1)**, a widely adopted ben
 > 📥 **Download MVTec AD1:** [https://www.mvtec.com/company/research/datasets/mvtec-ad](https://www.mvtec.com/company/research/datasets/mvtec-ad)
 
 After downloading, place the dataset inside the `Dataset/` folder. The expected structure is:
+
+```
 Dataset/
 ├── bottle/
 │   ├── train/good/
@@ -117,6 +122,7 @@ Dataset/
 ├── transistor/
 ├── wood/
 └── zipper/
+```
 
 ### Dataset Statistics (13 categories evaluated)
 
@@ -143,46 +149,49 @@ Dataset/
 ## Methodology
 
 ### Full Pipeline
+
+```
 Input Image (224×224×3)
-│
-▼
+        │
+        ▼
 [ WideResNet50 — Frozen Backbone, pretrained on ImageNet ]
-│
-┌────┴────┐
-▼         ▼
+        │
+   ┌────┴────┐
+   ▼         ▼
 Layer 2    Layer 3
 (28×28     (14×14
-512ch)    1024ch)
-│         │
-│   Upsample (14×14 → 28×28 via bilinear interpolation)
-│         │
-└────┬────┘
-▼
+ 512ch)    1024ch)
+   │         │
+   │   Upsample (14×14 → 28×28 via bilinear interpolation)
+   │         │
+   └────┬────┘
+        ▼
 Concatenate along channel dim → 28×28×1536
-│
+        │
 L2 Normalize (unit hypersphere)
-│
+        │
 Sparse Random Projection → 28×28×256
-│
-┌────┴──────────────────────┐
-│                           │
+        │
+   ┌────┴──────────────────────┐
+   │                           │
 [TRAINING PHASE]          [TESTING PHASE]
-│                           │
+   │                           │
 Coreset Sampling           LSH Query
 (greedy k-center,          (k=9 approximate
-retain 5%)                 neighbours)
-│                           │
+ retain 5%)                 neighbours)
+   │                           │
 LSH Index Build            Mean Distance
 (100 random                over 9 neighbours
-projection trees)             │
-28×28 Patch Heatmap
-│
-95th Percentile → Image Score
-│
-Score > Threshold?
-/              
-YES               NO
-DEFECT           NORMAL ✓
+ projection trees)              │
+                        28×28 Patch Heatmap
+                                │
+                    95th Percentile → Image Score
+                                │
+                       Score > Threshold?
+                        /              \
+                      YES               NO
+                    DEFECT           NORMAL ✓
+```
 
 ### 1. Pre-Trained Backbone — WideResNet50
 
@@ -285,15 +294,17 @@ Reduces up to 300,000 patch vectors (e.g., Hazelnut: 391 × 784 = 306,544) down 
 | Pill | 89.74 | 94.37 | 93.71 | 95.04 | 7.4 |
 | **Average** | **96.13** | **95.44** | **93.86** | **96.81** | **8.10** |
 
-> ✅ 8/13 categories (61.5%) achieved AUROC above 95%  
-> ✅ 12/13 categories (92.3%) achieved AUROC above 90%  
-> ✅ Tile achieved perfect 100% AUROC  
-> ✅ Standard deviation of AUROC scores: 3.8% — consistent performance across all categories  
+> ✅ 8/13 categories (61.5%) achieved AUROC above 95%
+> ✅ 12/13 categories (92.3%) achieved AUROC above 90%
+> ✅ Tile achieved perfect 100% AUROC
+> ✅ Standard deviation of AUROC scores: 3.8% — consistent performance across all categories
 
 ### Confusion Matrix Summary (Averaged across all 13 categories)
-               Predicted Normal    Predicted Defect
-Actual Normal  |      96.2%        |       3.8%       |
-Actual Defect  |       3.2%        |      96.8%       |
+
+|  | Predicted Normal | Predicted Defect |
+|---|---|---|
+| **Actual Normal** | 96.2% | 3.8% |
+| **Actual Defect** | 3.2% | 96.8% |
 
 - **Specificity: 96.2%** — Only 3.8% false positive rate (low false alarms, no unnecessary production halts)
 - **Recall: 96.8%** — Catches 96.8% of all actual defects (false negative rate of only 3.2%)
@@ -306,7 +317,7 @@ Actual Defect  |       3.2%        |      96.8%       |
 | Diffusion Model (SD + LoRA) | 63.49 | 89.42 | 80.87 | 100.00 | 1.17 |
 | **PatchCore-LSH (Ours)** | **96.13** | **95.44** | **93.86** | **96.81** | **8.10** |
 
-> **+32.64% higher AUROC** than diffusion models while running **6.9× faster**  
+> **+32.64% higher AUROC** than diffusion models while running **6.9× faster**
 > **+35.93% higher AUROC** than autoencoder baseline
 
 ### Inference Speed Breakdown
@@ -356,7 +367,7 @@ All graphs are in [`Results/Graphs/`](Results/Graphs/) and all result tables are
 | `ROC Curves.png` | ROC curves per category |
 | `Method comparison.png` | Bar comparison: PatchCore-LSH vs AED vs Diffusion model |
 | `Performance Radar Chart.png` | Radar/spider chart across AUROC, F1, Precision, Recall, FPS |
-| `Distributiuon of AUROC across categories.png` | Distribution plot showing spread of AUROC scores |
+| `Distribution of AUROC across categories.png` | Distribution plot showing spread of AUROC scores |
 | `MVTEC AD1 Dataset Statistics.png` | Visual overview of training/test splits per category |
 | `Final Results on MVTEC AD1.png` | Complete results table rendered as image |
 | `Individual Category Performance.png` | Per-category breakdown table |
@@ -400,11 +411,11 @@ The framework is well-suited for real-world industrial deployment where defect s
 
 ## Authors
 
-**Krishka Kate** and **Abhimanyu Nema**  
+**Krishka Kate** and **Abhimanyu Nema**
 *NMIMS Indore*
 
-> 🔗 **GitHub:** [https://github.com/abhimanyu284/Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH](https://github.com/abhimanyu284/Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH)  
-> 📄 **Paper:** [`Research Paper/Research_Paper_Patchcore.pdf`](Research%20Paper/Research_Paper_Patchcore.pdf)  
+> 🔗 **GitHub:** [https://github.com/abhimanyu284/Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH](https://github.com/abhimanyu284/Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH)
+> 📄 **Paper:** [`Research Paper/Research_Paper_Patchcore.pdf`](Research%20Paper/Research_Paper_Patchcore.pdf)
 > 📦 **Dataset:** [MVTec AD1 — Official Download](https://www.mvtec.com/company/research/datasets/mvtec-ad)
 
 ---
