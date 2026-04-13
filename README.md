@@ -70,7 +70,7 @@ Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH/
 ├── Dataset/
 │   └── (MVTec AD1 — download separately, see Dataset section below)
 │
-├── Documents
+├── Documents/
 │   └── Project Summary.pdf  # Project overview 
 │
 ├── Research Paper/
