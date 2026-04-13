@@ -404,7 +404,7 @@ The framework is well-suited for real-world industrial deployment where defect s
 *NMIMS Indore*
 
 > 🔗 **GitHub:** [https://github.com/abhimanyu284/Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH](https://github.com/abhimanyu284/Efficient-Industrial-Anomaly-Detection-Using-Patchcore-LSH)  
-> 📄 **Paper:** [`Research Paper/Research_Paper_Patchcore.pdf`](Research%20Paper/Research_Paper_Patchcore.pdf)  
+> 📄 **Paper:** [`Research Paper/Research_Paper_Patchcore.pdf`](Research Paper/Research Paper Patchcore.pdf)  
 > 📦 **Dataset:** [MVTec AD1 — Official Download](https://www.mvtec.com/company/research/datasets/mvtec-ad)
 
 ---
